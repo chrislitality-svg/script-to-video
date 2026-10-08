@@ -45,6 +45,7 @@ description: >
 见 references/audio.md）。每句输出 wav + 实测时长 `audio/vo/vo_dur.json`。
 - 中文数字年份逐字转写（2022 → 二零二二）；小数点转"点"。
 - TTS 偶发空响应：脚本须重试 + 断点续跑。
+- 句级实测时长就是默认时钟。字级时间戳、已有录音、歌本身当时钟：见 references/audio.md，不要改 `vo_tts.py`。
 
 ### ④ 时间轴同步
 `python templates/sync.py`：场景时长 = 0.25s 提前量 + 句长 + 尾部呼吸（0.5–1.9s），
@@ -59,11 +60,13 @@ description: >
 - 摄像机永远有 1.4%–3% 缓推——画面不是静帧。
 - "先出后进"：旧元素完全退场再进新元素，杜绝交叉叠加。
 - 视觉规范与动效语言：**读 references/design-system.md 和 references/motion.md**。
+  默认不换风格。用户指定另一种解说风格时才读 references/styles.md。
 
 ### ⑥ 审计 + 目检（质量门，不可跳过）
 浏览器里跑 `auditText()`（文字越界）与 `auditOverlap()`（元素重叠），**归零才能截图**。
 审计器抓不到"丑"：每场景选内容峰值帧截图目检（文字裁切/构图空洞/风格跑色/图形形状），
 硬伤立即修。设计意图性重叠给元素加 `data-okov="1"` 豁免。
+跳切、运动热力图、以及换一个没写过这片的 agent 只报问题：见 references/qa.md。
 
 ### ⑦ 声音
 `python templates/music.py` 程序合成轻快配乐（零版权风险）；或用自备曲目（注意版权）。
@@ -112,12 +115,23 @@ ffmpeg（PATH 中可用）
 - 引用外部音乐先确认授权；默认用程序合成配乐。
 - 涉及真实人物/企业后缀名与数字，交付前逐项核对数据宪法。
 
+## 延伸（不改九步）
+
+默认仍是 60–150 秒、单文件 HTML、蓝图视觉。下面三份只在默认不够时打开，不改 `templates/`：
+
+- 片子变长、要拆文件、或怀疑渲染不纯：references/pipeline.md
+- 用户指定另一种解说风格，或要给角色上画风：references/styles.md
+- 审计归零之后、交付之前：references/qa.md
+
 ## 参考
 
 | 文件 | 内容 |
 |---|---|
 | references/design-system.md | 视觉系统：色彩纪律、字号三级、图签、制图语法 |
 | references/motion.md | 动效语言清单：何时用哪种动效、参数 |
-| references/audio.md | 声音管线：TTS 选型、混音公式、母带目标 |
+| references/audio.md | 声音管线：TTS 选型、混音公式、母带目标、声音即时钟 |
 | references/pitfalls.md | 踩坑清单（按代价排序，出问题先查这里） |
+| references/pipeline.md | 代码视频五步、何时拆文件、确定性禁令 |
+| references/styles.md | 八种解说风格卡；默认仍是蓝图 |
+| references/qa.md | 静帧、热力图、换一个 agent 只报问题、实践笔记 |
 | templates/ | 可直接运行的骨架与管线脚本 |

@@ -45,3 +45,16 @@ ffmpeg 陷阱：
 - loudnorm summary：I 达标 ±0.5、TP ≤-1.5；
 - volumedetect：mean ≈ -15dB、max ≤ -1.3dB；
 - 无静音轨（音轨存在且 mean > -40dB）。
+
+## 五、声音即时钟（不换 vo_tts.py）
+
+默认仍是本仓库：`vo_tts.py` 出每句 wav，实测时长写入 `vo_dur.json`，`sync.py` 排场景。句级时长就是时钟。不要为了更细的对齐去改 `vo_tts.py`。
+
+需要字级对齐时（旁白说到某个词，图形必须在那一帧出现），才用带时间戳的外部 TTS 当时钟。宝玉文中举的例子是 ElevenLabs 的 convert-with-timestamps：返回音频，同时给出每个字符的起止时间（<https://elevenlabs.io/docs/api-reference/text-to-speech/convert-with-timestamps>，出处 <https://x.com/dotey/status/2105181393638531536>）。时间戳写进时间轴，画面去贴它。默认成片仍走 `vo_tts.py`。
+
+手头已是录音、没有字级时间戳：用 Whisper 一类识别反推每个词的时间，再当时钟。出处同上。
+
+配乐和音效跟同一条时钟。人声在时压低配乐——`mix.py` 已经在做 ducking，不要另写一套。音乐视频反过来：歌本身是时钟，画面跟歌词和节拍，用不到 TTS。出处同上。
+
+换场景要换乐器或调式时，改 `music.py` 里的 BPM、和弦进行和音色参数，按场景时间接在同一条合成里。不要再引入第二个配乐引擎。程序合成、零版权，仍是默认。
+

@@ -66,6 +66,10 @@ python templates/check.py  <project>             # 七项校验 ALL PASS → 交
 [references/motion.md](references/motion.md) ·
 [references/audio.md](references/audio.md) ·
 [references/pitfalls.md](references/pitfalls.md)（踩坑清单，按代价排序）。
+更长片子的五步与确定性禁令、解说风格卡、成片复查见
+[references/pipeline.md](references/pipeline.md) ·
+[references/styles.md](references/styles.md) ·
+[references/qa.md](references/qa.md)。默认仍是上面的九步和蓝图系统。
 
 ## 适用与不适用
 
@@ -74,6 +78,8 @@ python templates/check.py  <project>             # 七项校验 ALL PASS → 交
 **不适合**：实拍纪实、真人出镜、需要生成式画面（Sora/Veo 类）的题材——
 本方法的美学来自"图形语言与题材强绑定"（工程=图纸，中医=本草图谱，
 考古=地层剖面，AI=流水线图纸……），它不是万能皮肤。
+照片级人脸和动物同样不要用这条管线当底子；生成式只做插入镜头，比较轴见
+[references/qa.md](references/qa.md)。
 
 ## 中文字体
 
