@@ -123,8 +123,51 @@
 | `painted-animation` | 手绘水彩动画 / Painted animation | 水彩填色加墨线的手绘卡通，角色在演戏，画面里默认不放说明文字。 | 动画短片、音乐视频、需要表演的故事 | [skills/painted-animation/SKILL.md](https://github.com/tuzhechen2005/opus-video-skills/blob/main/skills/painted-animation/SKILL.md) |
 | `kinetic-reel` | 动态排版短片 / Kinetic reel | 窄黑体大字、HUD 小字，底下叠 WebGL 层，切在节拍上。 | 作品集、产品介绍、开场短片 | [skills/kinetic-reel/SKILL.md](https://github.com/tuzhechen2005/opus-video-skills/blob/main/skills/kinetic-reel/SKILL.md) |
 
+## 讲解演法（lanshu 九种）
+
+来源：[cclank/lanshu-create-ai-presenter-video `explainer/STYLES.md`](https://github.com/cclank/lanshu-create-ai-presenter-video/blob/main/explainer/STYLES.md)。表是 2026-10-08 打开的那一页。上游这九种都是 16:9 的讲解片演法，不是另一套管线：这里仍用本仓库 `templates/`。用户已经定了画幅就不要改成 16:9。V6、V9 在上游用 3D；本仓库用分层、视差和简单体积近似，不要另起 HyperFrames 或 Three 工程。
+
+问询时它们和上面的 id 一样，只挑贴题的，不要一次倒出九个。`v7-drafting` 不是科普默认，只有用户要图纸、工程、硬核技术深挖时才放进首推。
+
+| id | 名称 | 一句外观 | 适合 | 上游 |
+|---|---|---|---|---|
+| `v1-editorial` | 留白 | 暖纸、墨色、一个朱红强调，靠留白和翻页。 | 严肃、商业、产品讲解 | 同上 STYLES.md 的 `v1-editorial` |
+| `v2-signal` | 信号 | 暗色仪表、一个亮强调色，标签和数据包在动。 | 系统、网络、基础设施 | `v2-signal` |
+| `v3-notebook` | 手帐 | 方格纸上像有一支笔在写，便利贴，橡皮。 | 逐步推导、笔记 | `v3-notebook` |
+| `v4-paper` | 立体书 | 牛皮纸翻起的一层层，软阴影和视差。 | 故事、流程 | `v4-paper` |
+| `v5-comic` | 波普漫画 | 网点漫画，贴纸拍上来，一句一个短句。 | 观点、辟谣、快节奏 | `v5-comic` |
+| `v6-cinematic` | 一镜到底 | 连续的影棚空间，道具像实物，少切。 | 大概念、发布 | `v6-cinematic` |
+| `v7-drafting` | 图纸与注脚 | 一张黑图纸、引线和注脚。不是蓝图色板。 | 只在用户要技术深挖或图纸时 | `v7-drafting` |
+| `v8-chalkboard` | 黑板报 | 黑板粉笔现写，收束可以是一张脑图。 | 入门、课堂 | `v8-chalkboard` |
+| `v9-clay` | 黏土小城 | 等距小城，比喻旁边标真实术语。 | 讲给外行 | `v9-clay` |
+
+讲稿句长跟这个演法走，但语速仍只用 brief 里的慢/中/快，不要改成上游 MiniMax 的 speed 小数。
+
+## 发布片演法（A3 三张风格卡）
+
+来源：[A3-Media/opus-video-skills `skills/video-style-lab/styles/`](https://github.com/A3-Media/opus-video-skills/tree/main/skills/video-style-lab/styles)。只收了打开过定义文件、且没有和已有 id 重复的三张。色值不从卡里搬成全局色板；仍由 brief 声明不超过 5 色。
+
+| id | 名称 | 一句外观 | 适合 | 上游 |
+|---|---|---|---|---|
+| `apple-product-film` | 产品片 | 一镜一意，物件居中，留得下气口，大约三色，缓动，声音很省。 | 产品揭示、功能发布 | [apple-product-film.md](https://github.com/A3-Media/opus-video-skills/blob/main/skills/video-style-lab/styles/apple-product-film.md) |
+| `product-ui-kinetic` | 产品界面动态字 | 大字交给真实界面：卡片、步骤、屏幕在同一条循环里变，收到标志和一句行动。 | 软件发布、落地页 | [product-ui-kinetic.md](https://github.com/A3-Media/opus-video-skills/blob/main/skills/video-style-lab/styles/product-ui-kinetic.md) |
+| `terminal-lab-document` | 终端实验文档 | 纸页和墨底切换，开机可以是一小段 CRT，印章和标签是文档不是蓝图。 | 只在用户要实验记录、工具品牌片时 | [terminal-lab-document.md](https://github.com/A3-Media/opus-video-skills/blob/main/skills/video-style-lab/styles/terminal-lab-document.md) |
+
+`terminal-lab-document` 与 `blueprint`、`v7-drafting` 都不是沉默默认。
+
 ## 未收进目录
 
 [yihui-dev/awesome-opus5-5-videos](https://github.com/yihui-dev/awesome-opus5-5-videos) 能打开，README 约五万字，标题只有 Motion graphics、Explainers、3D scenes、Games & interactive，是提示词合集不是风格索引。按约定不收、不粘贴。
 
-可选 id 共 45 个：lemo-opuscar 43 个（含 `blueprint`）加上面 2 个技能。
+[threerocks/hand-drawn-styles](https://github.com/threerocks/hand-drawn-styles) 的 `STYLES.md` 已打开，里面是 1–20 和 3.1 共 21 段生图配方。该仓库 `PROTOCOL.md` 禁止缩写、改写或混配配方，而且那些配方是出提示词，不是本仓库的代码画面。所以不把编号收成视频 id，也不贴配方。只用了协议里的两条：含糊的「涂鸦」要停下让人选；不要揉两套画风。
+
+[A3-Media/opus-video-skills](https://github.com/A3-Media/opus-video-skills) 另外两张卡打开过但没另起 id：`hand-painted-cartoon` 与已有的 `painted-animation` 是同一路手绘卡通；`talking-head-meme-edit` 要真人抠像和生成背景，本管线画不了，也不做数字人。
+
+[echris6/motion-video-kit](https://github.com/echris6/motion-video-kit) 没有新的风格 id。`motion-grammar.md` 里点名的发布片只用来学机制，不收成 id，也不抄它们的版式。
+
+两条 X 帖只拿到标题和预告句，正文没有展开，因此没有从帖里加 id 或手法：
+
+- [x.com/dotey/status/2105181393638531536](https://x.com/dotey/status/2105181393638531536) 标题是「Claude Opus 5.5 是怎么做出视频的」。预告只说到片子是程序画出来的。
+- [x.com/AlchainHust/status/2107347834668224687](https://x.com/AlchainHust/status/2107347834668224687) 标题是「huashu-art-motion发布！可能是最有审美的动画skill。」预告提到一支一镜到底和一支白板片。没有打开那个 skill 仓库，所以不收它的 id。
+
+可选 id 共 57 个：lemo-opuscar 43 个（含 `blueprint`），opus-video-skills 2 个，lanshu 9 个，A3 风格卡 3 个。
