@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>script-to-video · skeleton demo</title>
+<style>
+/* ============ 蓝图设计系统骨架（1080×1440，3:4） ============ */
+@font-face{font-family:Inter;font-style:normal;font-weight:400;src:url('fonts/inter-400.woff2') format('woff2')}
+@font-face{font-family:Inter;font-style:normal;font-weight:600;src:url('fonts/inter-600.woff2') format('woff2')}
+@font-face{font-family:Inter;font-style:normal;font-weight:700;src:url('fonts/inter-700.woff2') format('woff2')}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1440px;overflow:hidden;background:#0E2843}
+#stage{position:relative;width:1080px;height:1440px;overflow:hidden;font-family:'Inter','MiSans','Microsoft YaHei UI',sans-serif;color:#E9F2FB;background:#0E2843}
+#grid{position:absolute;inset:0;background:
+ radial-gradient(1500px 1100px at 42% 12%,#163560 0%,rgba(20,50,86,0) 55%),
+ linear-gradient(180deg,#123052 0%,#0E2843 45%,#0B2038 100%)}
+#grid::before{content:"";position:absolute;inset:0;background-image:
+  linear-gradient(rgba(150,190,230,.055) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(150,190,230,.055) 1px,transparent 1px),
+  linear-gradient(rgba(150,190,230,.12) 1.5px,transparent 1.5px),
+  linear-gradient(90deg,rgba(150,190,230,.12) 1.5px,transparent 1.5px);
+ background-size:24px 24px,24px 24px,120px 120px,120px 120px}
+#vig{position:absolute;inset:0;background:radial-gradient(1300px 1000px at 50% 42%,transparent 55%,rgba(4,14,28,.5) 100%);pointer-events:none}
+#frame{position:absolute;inset:22px;border:1.5px solid rgba(170,200,230,.34);pointer-events:none}
+#frame::before,#frame::after{content:"";position:absolute;width:26px;height:26px;border:2.5px solid rgba(210,230,250,.6)}
+#frame::before{left:-9px;top:-9px;border-right:none;border-bottom:none}
+#frame::after{right:-9px;bottom:-9px;border-left:none;border-top:none}
+.corner{position:absolute;width:26px;height:26px;border:2.5px solid rgba(210,230,250,.6);pointer-events:none}
+#cTL{left:13px;top:13px;border-right:none;border-bottom:none}
+#cTR{right:13px;top:13px;border-left:none;border-bottom:none}
+#cBL{left:13px;bottom:13px;border-right:none;border-top:none}
+#cBR{right:13px;bottom:13px;border-left:none;border-top:none}
+#hdL{position:absolute;left:44px;top:40px;pointer-events:none}
+#hdL .l1{font:600 26px/1 'MiSans','Inter';letter-spacing:.14em;color:#DCEBFA}
+#hdL .l2{font:600 13px/1 'Inter';letter-spacing:.30em;color:#6E93B8;margin-top:9px}
+#hdR{position:absolute;right:44px;top:44px;text-align:right;pointer-events:none;font:600 15px/1.7 'Inter','MiSans';letter-spacing:.16em;color:#6E93B8}
+/* 图签：图名随场景变，制图人=叙事主体 */
+#tb{position:absolute;right:36px;bottom:170px;width:302px;border:1.5px solid rgba(170,200,230,.42);background:rgba(10,30,54,.55);pointer-events:none;font:600 15px/1 'MiSans','Inter';color:#A9C6E2}
+#tb .row{display:flex;border-top:1px solid rgba(170,200,230,.25)}
+#tb .row:first-child{border-top:none}
+#tb .k{width:64px;padding:9px 0 8px 10px;color:#6E93B8;font:600 13px/1 'MiSans','Inter';letter-spacing:.08em}
+#tb .v{flex:1;padding:9px 10px 8px 0;color:#DCEBFA}
+#tb .v small{color:#6E93B8;font:600 12px 'Inter';margin-left:6px;letter-spacing:.08em}
+/* 字幕：底部药丸，入场带上浮 */
+#sub{position:absolute;left:40px;right:40px;bottom:44px;z-index:30;text-align:center;pointer-events:none}
+#sub span{display:inline-block;white-space:nowrap;background:rgba(5,16,30,.78);border:1px solid rgba(150,190,230,.28);color:#E8F2FC;padding:12px 28px;border-radius:8px;font:600 30px/1.35 'MiSans','Inter';letter-spacing:.02em}
+/* 转场扫描线 */
+#scan{position:absolute;top:0;bottom:0;width:3px;pointer-events:none;opacity:0;z-index:20;
+ background:linear-gradient(180deg,transparent 0%,rgba(255,194,75,.9) 18%,rgba(255,230,180,1) 50%,rgba(255,194,75,.9) 82%,transparent 100%);
+ box-shadow:0 0 18px rgba(255,194,75,.55),-26px 0 34px rgba(255,194,75,.22)}
+.scene{position:absolute;inset:0;display:none}
+.scene.on{display:block}
+.cam{position:absolute;inset:0;will-change:transform,opacity}
+.sv{position:absolute;inset:0;width:1080px;height:1440px;pointer-events:none;overflow:visible}
+.tag{position:absolute;left:56px;top:148px;pointer-events:none}
+.tag .en{font:600 14px/1 'Inter';letter-spacing:.34em;color:#6E93B8}
+.tag .zh{font:600 21px/1 'MiSans','Inter';letter-spacing:.20em;color:#BBD4EC;margin-top:10px;padding-left:14px;border-left:3px solid #FFC24B}
+.zh{font-family:'MiSans','Inter';font-weight:600;color:#EAF3FC}
+.num{font:700 1em 'Inter';font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:#F2F8FE}
+.am{color:#FFC24B}.md{color:#8FB3D4}.rd{color:#FF6157}
+.ch{display:inline-block;will-change:transform}
+.bcard{position:absolute;border:1.5px solid rgba(170,200,230,.42);background:rgba(10,30,54,.55);box-shadow:0 22px 55px rgba(2,12,26,.6)}
+.bshadow{position:absolute;height:46px;background:radial-gradient(ellipse at center,rgba(2,10,22,.60),transparent 72%);filter:blur(7px);opacity:0;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="stage">
+ <div id="grid"></div><div id="frame"></div>
+ <div class="corner" id="cTL"></div><div class="corner" id="cTR"></div><div class="corner" id="cBL"></div><div class="corner" id="cBR"></div>
+ <div id="hdL"><div class="l1">项目名 · 章节</div><div class="l2">PROJECT · SECTION</div></div>
+ <div id="hdR"><div id="hdS">SHT 01 / 03</div><div>比例 1:1</div></div>
+ <div id="tb">
+  <div class="row"><div class="k">图 名</div><div class="v" id="tbName">开篇</div></div>
+  <div class="row"><div class="k">图 号</div><div class="v" id="tbNo">S-01<small>DEMO</small></div></div>
+  <div class="row"><div class="k">制 图</div><div class="v">你 <small>审核 AI</small></div></div>
+ </div>
+ <div id="scan"></div>
+ <div id="sub"></div>
+</div>
+<svg width="0" height="0" style="position:absolute"><defs>
+<filter id="inkrot5"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="4" seed="5"/><feDisplacementMap in="SourceGraphic" scale="8"/></filter>
+<pattern id="h45" width="9" height="9" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="9" stroke="rgba(160,195,230,.34)" stroke-width="1.6"/></pattern>
+</defs></svg>
+<script>
+/* ================= 工具 ================= */
+const $=(s,el=document)=>el.querySelector(s);
+const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const eo=u=>{u=clamp(u,0,1);return 1-Math.pow(1-u,3)};            /* cubic-out */
+const ei=u=>{u=clamp(u,0,1);return u*u*(3-2*u)};                   /* smoothstep */
+const back=(u,k=1.7)=>{u=clamp(u,0,1)-1;return 1+u*u*((k+1)*u+k)}; /* 过冲回弹 */
+const ph=(t,a,b)=>b<=a?1:clamp((t-a)/(b-a),0,1);                   /* 时间窗 */
+const tw=(a,b,u)=>a+(b-a)*clamp(u,0,1);                            /* 插值 */
+const WH='#E9F2FB',MD='#8FB3D4',DM='#5D82A6',AM='#FFC24B',RD='#FF6157';
+const DRW='pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"';
+const fmt=n=>String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+/* 砸落屏震：t0 时刻落地 */
+const shake=(t,t0,amp=7,f=46,dec=7)=>(t>t0?Math.sin((t-t0)*f)*Math.exp(-(t-t0)*dec)*amp:0);
+
+/* ================= 时间轴 / 字幕 / 图签（sync.py 自动重写） ================= */
+const TL={"dur":15.5,"shots":[
+{"id":"s01","start":0,"dur":5.5},{"id":"s02","start":5.5,"dur":5.5},{"id":"s03","start":11.0,"dur":4.5}]};
+let CUES=[
+{"s":0.25,"e":2.60,"zh":"每一份文稿"},{"s":2.60,"e":5.30,"zh":"都值得一条自己的视频"},
+{"s":5.75,"e":8.20,"zh":"三样东西，一次生成"},{"s":8.20,"e":10.80,"zh":"文案、画面、声音"},
+{"s":11.25,"e":13.20,"zh":"改改文案就能重拍"},{"s":13.20,"e":15.40,"zh":"这就是代码剪辑"}];
+const TBNAME={"s01":"开篇","s02":"三要素","s03":"可复现"};
+
+/* ================= 场景框架 ================= */
+const SC={};
+function defscene(id,builder){
+ const sec=el('section','scene');sec.id=id;
+ const cam=el('div','cam');sec.appendChild(cam);
+ $('#stage').insertBefore(sec,$('#sub'));
+ SC[id]={sec,cam,render:builder(cam)};
+}
+function sv(s,inner){s.insertAdjacentHTML('beforeend',`<svg class="sv" viewBox="0 0 1080 1440">${inner}</svg>`);return s.lastElementChild}
+function tag(s,en,zh){s.insertAdjacentHTML('beforeend',`<div class="tag"><div class="en">${en}</div><div class="zh">${zh}</div></div>`)}
+function setDraw(e,u){if(e)e.style.strokeDashoffset=String(1-clamp(u,0,1))}
+function march(e,t,speed){if(e)e.style.strokeDashoffset=String(-t*speed)}
+function seal(s,id,x,y,w,h,txt,fs=44){ /* 红章 = 判定 */
+ s.insertAdjacentHTML('beforeend',`<div data-okov="1" id="st_${id}" style="position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;opacity:0">
+  <svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="position:absolute;inset:0;filter:url(#inkrot5)">
+   <rect x="7" y="7" width="${w-14}" height="${h-14}" rx="14" fill="none" stroke="${RD}" stroke-width="6"/>
+   <text x="${w/2}" y="${h/2+fs*.36}" text-anchor="middle" font-family="MiSans,Inter" font-weight="700" font-size="${fs}" fill="${RD}" letter-spacing="4">${txt}</text>
+  </svg></div>`);
+ return $(`#st_${id}`);
+}
+
+/* ============ 示例场景 1：大字砸落 + 冲击环 + 背景呼吸 ============ */
+defscene('s01',s=>{
+ tag(s,'HOOK · CLAIM','开篇钩子');
+ s.insertAdjacentHTML('beforeend',`<div id="qbg" data-okov="1" style="position:absolute;left:0;right:0;top:210px;text-align:center;font:700 760px/1 'MiSans','Inter';color:rgba(255,194,75,.05);pointer-events:none">?</div>`);
+ const g=sv(s,`<circle id="ring" cx="540" cy="412" r="80" fill="none" stroke="${AM}" stroke-width="3" opacity="0"/>`);
+ s.insertAdjacentHTML('beforeend',`
+  <div id="a" style="position:absolute;left:0;right:0;top:250px;text-align:center;opacity:0"><span class="num" style="font-size:190px">100%</span></div>
+  <div id="b" style="position:absolute;left:0;right:0;top:560px;text-align:center;opacity:0"><span class="zh" style="font:600 64px/1.3 'MiSans','Inter'">由<span class="am">代码</span>渲染的短视频</span></div>
+  <div id="c" style="position:absolute;left:0;right:0;top:830px;text-align:center;font:600 22px 'Inter','MiSans';letter-spacing:.22em;color:#8FB3D4;opacity:0">NO EDITOR · NO CAMERA · ZERO COST</div>`);
+ const A=$('#a');
+ return (t,d)=>{
+  const a=ph(t,.30,.62);
+  A.style.opacity=a;
+  A.style.transform=`scale(${tw(1.85,1,back(a,2.2))}) translateY(${shake(t,.95,7)}px)`;
+  const ru=ph(t,.95,1.62);                                   /* 落地冲击环 */
+  $('#ring',g).setAttribute('r',String(80+290*eo(ru)));
+  $('#ring',g).setAttribute('opacity',String((1-ru)*.45));
+  $('#qbg').style.opacity=String(.55+.45*Math.sin(t*.9));    /* 背景呼吸 */
+  const b=ph(t,1.55,1.95);
+  $('#b').style.opacity=b;$('#b').style.transform=`translateY(${tw(26,0,eo(b))}px)`;
+  $('#c').style.opacity=ph(t,3.35,3.75);
+ };
+});
+
+/* ============ 示例场景 2：三数据 + 引线先行 + 脉冲环 ============ */
+defscene('s02',s=>{
+ tag(s,'STATS · EXHIBIT','数据三连');
+ const g=sv(s,`
+  <ellipse id="sh" cx="540" cy="520" rx="230" ry="26" fill="rgba(2,10,22,.55)" opacity="0"/>
+  <rect id="card" x="290" y="220" width="500" height="300" rx="10" fill="rgba(8,24,44,.72)" stroke="rgba(200,224,248,.55)" stroke-width="2" opacity="0"/>
+  <circle id="pp" cx="540" cy="370" r="52" fill="none" stroke="${AM}" stroke-width="2.5" opacity="0"/>
+  <g id="lds">
+   <line id="l1" x1="500" y1="650" x2="620" y2="650" stroke="${DM}" stroke-width="2" ${DRW}/>
+   <line id="l2" x1="500" y1="830" x2="620" y2="830" stroke="${DM}" stroke-width="2" ${DRW}/>
+   <line id="l3" x1="500" y1="1010" x2="620" y2="1010" stroke="${DM}" stroke-width="2" ${DRW}/>
+  </g>`);
+ const D=[[620,650,'词','文案',1.55],[620,830,'帧','画面',2.15],[620,1010,'Hz','声音',2.75]];
+ D.forEach(([x,y,unit,zh],i)=>s.insertAdjacentHTML('beforeend',`
+  <div id="d${i}" style="position:absolute;left:${x}px;top:${y-72}px;width:340px;opacity:0">
+   <div style="font:600 15px 'Inter';letter-spacing:.26em;color:#6E93B8">ITEM 0${i+1} · ${zh.toUpperCase()}</div>
+   <div style="margin-top:2px"><span class="num am" style="font-size:76px">0</span><span class="zh md" style="font:600 36px 'MiSans','Inter';margin-left:8px">${unit}</span></div>
+  </div>`));
+ return (t,d)=>{
+  /* 投影先行：阴影摊开 → 卡片砸落 → 阴影收实 */
+  const su=ph(t,.15,.65);
+  $('#sh',g).style.opacity=String(.6*su);$('#sh',g).setAttribute('rx',String(tw(120,230,eo(su))));
+  const cu=ph(t,.40,.90);
+  $('#card',g).style.opacity=cu;
+  $('#card',g).setAttribute('transform',`translate(0 ${tw(50,0,eo(cu))}) translateY(${shake(t,1.05,6)}px)`);
+  /* 脉冲双环 */
+  if(t>1.2){const pu=(t%1.4)/1.4;
+   $('#pp',g).setAttribute('r',String(52+34*pu));$('#pp',g).setAttribute('opacity',String((1-pu)*.4));}
+  /* 引线先行 + 数据砸落计数 */
+  D.forEach(([x,y,unit,zh],i)=>{
+   const t0=1.55+i*.60;
+   setDraw($(`#l${i+1}`,g),ph(t,t0-.30,t0-.05));
+   const a=ph(t,t0,t0+.40),e=$(`#d${i}`);
+   e.style.opacity=a;
+   e.style.transform=`translateY(${shake(t,t0+.55,4)}px) scale(${tw(1.6,1,back(a,2.1))})`;
+   e.querySelector('.num').textContent=fmt([19278,1930,48000][i]*eo(a));
+  });
+ };
+});
+
+/* ============ 示例场景 3：逐字 stagger + 列表点亮 + 红章判定 ============ */
+defscene('s03',s=>{
+ tag(s,'RERUN · ONE LINE','改稿重拍');
+ const g=sv(s,`<path id="ul" d="M 330 1006 L 750 1006" fill="none" stroke="${AM}" stroke-width="7" ${DRW}/>`);
+ const items=[['改文稿','EDIT',300],['跑脚本','RUN',560],['出新片','OUT',820]];
+ items.forEach(([zh,en,x],i)=>s.insertAdjacentHTML('beforeend',`
+  <div class="st3" data-i="${i}" style="position:absolute;left:${x-90}px;top:520px;width:180px;height:180px;opacity:0">
+   <div style="position:absolute;inset:0;border:2px solid rgba(170,200,230,.42);border-radius:10px;background:rgba(10,30,54,.72)"></div>
+   <div class="lit" style="position:absolute;inset:0;border:3px solid ${AM};border-radius:10px;opacity:0"></div>
+   <div style="position:absolute;left:0;right:0;top:44px;text-align:center;font:700 20px 'Inter';color:${DM}">0${i+1}</div>
+   <div style="position:absolute;left:0;right:0;top:88px;text-align:center"><span class="zh" style="font:600 34px 'MiSans','Inter'">${zh}</span></div>
+   <div style="position:absolute;left:0;right:0;top:138px;text-align:center;font:600 12px 'Inter';letter-spacing:.3em;color:#6E93B8">${en}</div>
+  </div>`));
+ s.insertAdjacentHTML('beforeend',`
+  <div id="big" style="position:absolute;left:0;right:0;top:880px;text-align:center">
+   <span class="ch zh" data-c="2.4" style="font:600 84px 'MiSans','Inter';opacity:0">一键</span><span class="ch zh am" data-c="2.55" style="font:600 84px 'MiSans','Inter';opacity:0">重拍</span>
+  </div>`);
+ seal(s,'x',760,836,160,84,'已验证',40);
+ const sts=[...s.querySelectorAll('.st3')];
+ return (t,d)=>{
+  /* 列表错峰点亮 */
+  sts.forEach((e,i)=>{
+   const a=ph(t,.5+i*.5,.85+i*.5);
+   e.style.opacity=a;
+   e.style.transform=`scale(${tw(1.6,1,back(a,2.1))})`;
+   e.querySelector('.lit').style.opacity=a*.95;
+  });
+  /* 逐字 stagger */
+  $('#big').querySelectorAll('.ch').forEach(e=>{
+   const c0=+e.dataset.c,a=ph(t,c0,c0+.28);
+   e.style.opacity=String(a);
+   e.style.transform=`translateY(${tw(14,0,eo(a))}px) scale(${tw(1.25,1,back(a,1.8))})`;
+  });
+  const sa=ph(t,3.30,3.56),st=$('#st_x');
+  st.style.opacity=sa*.96;
+  st.style.transform=`scale(${tw(2,1,back(sa,2.4))}) rotate(${tw(-12,0,eo(sa))}deg) translateY(${shake(t,3.56,5)}px)`;
+  setDraw($('#ul',g),ph(t,3.05,3.55));
+ };
+});
+
+/* ================= 字幕（sync.py 自动重写） ================= */
+function drawSubs(gt){
+ const subDiv=$('#sub');
+ let cue=null;
+ for(const c of CUES){if(gt>=c.s&&gt<c.e){cue=c;break}}
+ if(!cue){subDiv.style.opacity=0;return}
+ const a=Math.min(1,(gt-cue.s)/.18,(cue.e-gt)/.25);
+ const fs=Math.min(32,Math.floor(860/Math.max(6,cue.zh.length)));
+ subDiv.innerHTML=`<span style="font-size:${fs}px;transform:translateY(${(1-a)*9}px)">${cue.zh}</span>`;
+ subDiv.style.opacity=a;
+}
+
+/* ================= 确定性时间轴入口 ================= */
+let cur=null;
+const TEMPO=1.0;                       /* 全片变速只改这一个数（>1 加速） */
+function setTime(gt){
+ gt=Math.max(0,Math.min(TL.dur-.001,gt*TEMPO));
+ let sh=null;
+ for(const s of TL.shots){if(gt>=s.start&&gt<s.start+s.dur){sh=s;break}}
+ if(!sh)sh=TL.shots[TL.shots.length-1];
+ if(cur!==sh.id){
+  if(cur&&SC[cur])SC[cur].sec.classList.remove('on');
+  SC[sh.id].sec.classList.add('on');cur=sh.id;
+ }
+ /* 循环收口：末帧图签静默切回首帧状态 */
+ const idx=TL.shots.indexOf(sh)+1;
+ if(TL.dur-gt<0.05){
+  $('#tbName').textContent=TBNAME[TL.shots[0].id];
+  $('#tbNo').innerHTML='S-01<small>DEMO</small>';
+  $('#hdS').textContent='SHT 01 / '+TL.shots.length;
+ }else{
+  $('#tbName').textContent=TBNAME[sh.id];
+  $('#tbNo').innerHTML=`S-${String(idx).padStart(2,'0')}<small>DEMO</small>`;
+  $('#hdS').textContent=`SHT ${String(idx).padStart(2,'0')} / ${TL.shots.length}`;
+ }
+ const d=gt-sh.start;
+ SC[sh.id].render(d,sh.dur);
+ const fin=ph(d,0,.32),fout=1-ph(d,sh.dur-.42,sh.dur-.06);
+ SC[sh.id].cam.style.opacity=Math.min(fin,fout);
+ /* 摄像机缓推：画面永远不是静帧 */
+ const z=1.014+.018*eo(ph(d,0,sh.dur));
+ const dy=(TL.shots.indexOf(sh)%2?1:-1)*6*eo(ph(d,0,sh.dur));
+ SC[sh.id].cam.style.transform=`scale(${z}) translateY(${dy}px)`;
+ /* 转场扫描线 */
+ if(d<0.55){const sw=Math.min(1,d/.08)*Math.min(1,(0.55-d)/.22);
+  $('#scan').style.opacity=String(sw*.9);$('#scan').style.left=(1080*eo(ph(d,0,0.55))-30)+'px';}
+ else $('#scan').style.opacity='0';
+ drawSubs(gt);
+}
+window.setTime=setTime;
+
+/* ================= 审计器（归零才能截图） ================= */
+window.auditText=function(){ /* 文字越界：墨迹盒 vs 安全区 */
+ const bad=[];
+ for(const sh of TL.shots){
+  for(let k=0;k<=Math.ceil(sh.dur/.8);k++){
+   const t=Math.min(k*.8,sh.dur-.05);setTime((sh.start+t)/TEMPO);
+   SC[sh.id].sec.querySelectorAll('*').forEach(e=>{
+    if(e.closest('svg'))return;
+    if(e.children.length===0&&e.textContent.trim()&&e.offsetParent!==null&&e.checkVisibility({checkOpacity:true})){
+     const rg=document.createRange();rg.selectNodeContents(e);const r=rg.getBoundingClientRect();
+     if(r.width>0&&(r.left<8||r.right>1072||r.top<6||r.bottom>1434))bad.push(`${sh.id}@${t.toFixed(1)} '${e.textContent.trim().slice(0,14)}' x[${r.left|0},${r.right|0}] y[${r.top|0},${r.bottom|0}]`);
+    }});
+  }}
+ return [...new Set(bad)];
+};
+window.auditOverlap=function(){ /* 重叠：文字×文字、文字×卡片，>14px 才报 */
+ const bad=[];
+ for(const sh of TL.shots){
+  for(let k=0;k<=Math.ceil(sh.dur/.45);k++){
+   const t=Math.min(k*.45,sh.dur-.05);setTime((sh.start+t)/TEMPO);
+   const sec=SC[sh.id].sec;
+   const texts=[];
+   const cards=[...sec.querySelectorAll('.bcard')].filter(e=>e.checkVisibility({checkOpacity:true})).map(e=>({r:e.getBoundingClientRect(),label:'[卡]',el:e}));
+   sec.querySelectorAll('*').forEach(e=>{
+    if(e.closest('svg'))return;
+    if(e.children.length===0&&e.textContent.trim()&&e.offsetParent!==null&&e.checkVisibility({checkOpacity:true})){
+     const rg=document.createRange();rg.selectNodeContents(e);const r=rg.getBoundingClientRect();
+     if(r.width>0)texts.push({r,label:e.textContent.trim().slice(0,10),el:e});
+    }});
+   sec.querySelectorAll('svg text').forEach(e=>{
+    if(e.checkVisibility({checkOpacity:true})){const r=e.getBoundingClientRect();if(r.width>0)texts.push({r,label:(e.textContent||'').trim().slice(0,10),el:e})}});
+   const all=[...texts,...cards];
+   for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length;j++){
+    const A=all[i],B=all[j];
+    if(A.el&&B.el){
+     if(A.el.contains(B.el)||B.el.contains(A.el))continue;
+     if(A.el.closest('[data-okov]')||B.el.closest('[data-okov]'))continue;
+    }
+    const a=A.r,b=B.r;
+    const ox=Math.min(a.right,b.right)-Math.max(a.left,b.left);
+    const oy=Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top);
+    if(ox>14&&oy>14)bad.push(`${sh.id}@${t.toFixed(2)} '${all[i].label}'×'${all[j].label}' [${ox|0}x${oy|0}]`);
+   }
+  }}
+ return [...new Set(bad)];
+};
+</script>
+</body>
+</html>

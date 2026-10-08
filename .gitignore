@@ -1,0 +1,8 @@
+# 管线中间产物
+out/
+audio/
+shots/timeline.json
+tools/web/anim.html
+__pycache__/
+*.pyc
+.venv/
